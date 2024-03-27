@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Departamento {
+  Id_departamento Int         @id @default(autoincrement())
+  Departamento    String      @db.VarChar(50)
+  municipio       Municipio[]
+}
+
+model Municipio {
+  Id_municipio    Int          @id @default(autoincrement())
+  fk_departamento Int
+  departamento    Departamento @relation(fields: [fk_departamento], references: [Id_departamento])
+  Municipio       String       @db.VarChar(50)
+  direccion       Direccion[]
+  persona Persona[]
+}
+
+model Direccion {
+  Id_direccion Int       @id @default(autoincrement())
+  fk_municipio Int
+  municipio    Municipio @relation(fields: [fk_municipio], references: [Id_municipio])
+  Direccion    String    @db.VarChar(100)
+}
+
+model Persona {
+  Id_persona      Int          @id @default(autoincrement())
+  fk_municipio Int
+  municipio    Municipio @relation(fields: [fk_municipio], references: [Id_municipio])
+  Cc              Int
+  Nombre          String       @db.VarChar(50)
+  Apellido        String       @db.VarChar(50)
+  usuario         Usuario[]
+  Telefono        Telefono[]
+}
+
+model Telefono {
+  Id_telefono Int     @id @default(autoincrement())
+  fk_persona  Int
+  persona     Persona @relation(fields: [fk_persona], references: [Id_persona])
+  numero      String  @db.VarChar(13)
+  Estado      Boolean @default(true)
+}
+
+model Rol {
+  Id_rol      Int                 @id @default(autoincrement())
+  Rol         String              @db.VarChar(50)
+  Estado      Boolean             @default(true)
+  usuario     Usuario[]
+  rol_permiso Permiso_tiene_rol[]
+}
+
+model Permiso {
+  Id_permiso  Int                 @id @default(autoincrement())
+  Permiso     String              @db.VarChar(50)
+  Estado      Boolean             @default(true)
+  rol_permiso Permiso_tiene_rol[]
+}
+
+model Permiso_tiene_rol {
+  Id_permiso_tine_rol Int     @id @default(autoincrement())
+  rol                 Rol     @relation(fields: [fk_rol], references: [Id_rol])
+  fk_rol              Int
+  permiso             Permiso @relation(fields: [fk_permiso], references: [Id_permiso])
+  fk_permiso          Int
+  Estado              Boolean @default(true)
+}
+
+model Usuario {
+  Id_usuario Int        @id @default(autoincrement())
+  persona    Persona    @relation(fields: [fk_persona], references: [Id_persona])
+  fk_persona Int
+  Rol        Rol        @relation(fields: [fk_rol], references: [Id_rol])
+  fk_rol     Int        @default(1)
+  Correo     String     @db.VarChar(100)
+  Clave      String     @db.VarChar(200)
+  Estado     Boolean    @default(true)
+  proyecto   Proyecto[]
+}
+
+model Proyecto {
+  Id_proyecto Int      @id @default(autoincrement())
+  usuario     Usuario  @relation(fields: [fk_usuario], references: [Id_usuario])
+  fk_usuario  Int
+  Titulo      String   @db.VarChar(300)
+  Descripcion String   @db.Text
+  Fecha       DateTime @default(now())
+  Estado      Boolean  @default(true)
+  imagen      Imagen[]
+}
+
+model Encabezado {
+  Id_encabezado Int      @id @default(autoincrement())
+  Titulo        String   @db.VarChar(300)
+  Descripcion   String   @db.Text
+  imagen        Imagen[]
+}
+
+model Imagen {
+  Id_Imagen     Int         @id @default(autoincrement())
+  proyecto      Proyecto?   @relation(fields: [fk_proyecto], references: [Id_proyecto])
+  fk_proyecto   Int?
+  encabezado    Encabezado? @relation(fields: [fk_encabezado], references: [Id_encabezado])
+  fk_encabezado Int?
+  Url           String      @db.Text
+  Img_principal Boolean
+  Estado        Boolean     @default(true)
+}
